@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>זמן להירגע - אפליקציית ממ"ד</title>
+    <style>
+        :root {
+            --bg-color: #e0f2f1;
+            --primary-color: #4db6ac;
+            --accent-color: #00796b;
+            --text-color: #2c3e50;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 360px;
+            height: 92vh;
+            background: var(--white);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        h1 { 
+            color: var(--accent-color); 
+            font-size: 2.2rem; 
+            margin: 15px 0 5px 0; 
+            width: 100%;
+        }
+        
+        .subtitle { 
+            font-size: 1.2rem; 
+            margin-bottom: 30px; 
+            color: #666; 
+            width: 100%;
+            display: block;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+        }
+
+        .menu-btn:active { transform: scale(0.98); }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; }
+        .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Breathing Animation */
+        .breath-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
+        
+        .breath-circle {
+            width: 150px;
+            height: 150px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            transition: transform 4s ease-in-out, background-color 1s ease-in-out;
+            transform: scale(0.85);
+        }
+
+        .breath-circle.expand { transform: scale(1.35); background-color: #26a69a; }
+        .breath-circle.shrink { transform: scale(0.85); background-color: #80cbc4; }
+        .breath-circle.hold { transform: scale(1.35); background-color: #00897b; }
+
+        .breath-instruction {
+            margin-top: 50px;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            font-weight: 500;
+            padding: 0 10px;
+            min-height: 1.6em;
+        }
+
+        /* Joke Screen */
+        .joke-meta {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+
+        .joke-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            padding: 15px;
+            text-align: center;
+        }
+
+        /* Memory Game */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            width: 100%;
+        }
+        .card {
+            aspect-ratio: 1;
+            background: #b2dfdb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .card.flipped { background: white; border: 2px solid var(--primary-color); }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="home" class="screen active">
+            <h1>זמן להירגע קצת 🌸</h1>
+            <span class="subtitle">רגע של שקט במרחב המוגן</span>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; width: 100%;">
+                <button class="menu-btn" onclick="showScreen('breathing')">🌬️ נשימה עמוקה</button>
+                <button class="menu-btn" onclick="showScreen('jokes'); nextJoke()">🃏 רגע של חיוך</button>
+                <button class="menu-btn" onclick="initMemoryGame()">🎴 משחק זיכרון</button>
+            </div>
+        </div>
+
+        <!-- Breathing Screen -->
+        <div id="breathing" class="screen">
+            <h2>תרגול נשימה</h2>
+            <div class="breath-content">
+                <div class="breath-circle" id="breathCircle">שאיפה</div>
+                <div class="breath-instruction" id="breathDesc">נשימה איטית ומודעת</div>
+            </div>
+            <button class="back-btn" onclick="showScreen('home')">חזרה לתפריט</button>
+        </div>
+
+        <!-- Jokes Screen -->
+        <div id="jokes" class="screen">
+            <h2>חיוך קטן... 🃏</h2>
+            <div class="joke-meta">(אזהרה: הומור גרוע במיוחד)</div>
+            <div class="joke-content" id="jokeBox">טעינה...</div>
+            <button class="menu-btn" onclick="nextJoke()">בדיחה נוספת</button>
+            <button class="back-btn" onclick="showScreen('home')">חזרה לתפריט</button>
+        </div>
+
+        <!-- Memory Game Screen -->
+        <div id="memory" class="screen">
+            <h2>משחק זיכרון 🎴</h2>
+            <div id="memoryGrid" class="grid"></div>
+            <button class="menu-btn" style="padding: 10px; font-size: 1rem; margin-top: 10px;" onclick="initMemoryGame()">משחק חדש</button>
+            <button class="back-btn" onclick="showScreen('home')">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <script>
+        const jokes = [
+            "למה פילים לא משתמשים במחשב? כי הם מפחדים מהעכבר!",
+            "מה אמר האפס לשמונה? אחלה חגורה.",
+            "איך קוראים לאבטיח מצחיק? אבטיח-חחח.",
+            "איש אחד הלך הלך הלך... מצא שקל! המשיך ללכת.",
+            "למה המקרר תמיד רגוע? כי הוא יודע לשמור על קור רוח.",
+            "מה משותף למחשב ולמזגן? שניהם מפסיקים לעבוד כשפותחים חלונות.",
+            "למה התרנגולת חצתה את הכביש? כדי להוכיח לארמדילו שזה אפשרי.",
+            "מה אומר ענן אחד לענן אחר? 'תראה, יש למטה אנשים בלי מטריות!'",
+            "למה המים רגועים? כי הם זורמים.",
+            "למה הדלת שמחה? כי היא נפתחת להזדמנויות חדשות.",
+            "למה הדג לא רצה לשחק כדורגל? כי הוא פחד מהרשת.",
+            "מה עושה שוקולד כשהוא מתעצבן? נהיה מריר.",
+            "איך קוראים למכונית של חיות? ג'יפ ג'יפ.",
+            "למה הבננה הלכה לרופא? כי היא לא הרגישה טוב.",
+            "מה זה שחור ולבן וקשה לקרוא? פינגווין בערפל.",
+            "איך קוראים למורה למתמטיקה שאיבד את הזיכרון? אין-לי-מושג.",
+            "למה הירח תמיד כועס? כי הוא מלא.",
+            "מה אמר קיר אחד לקיר השני? 'ניפגש בפינה'.",
+            "איך קוראים לכלב שעושה קסמים? לברד-אוקוס-פוקוס.",
+            "למה המחשב הלך לרופא? כי היה לו וירוס.",
+            "מה זה ירוק, קופץ וריחני? צפרדע עם בושם.",
+            "איך קוראים לסוס ששותה הרבה קפה? סוס-קפאין.",
+            "למה הלחם הלך לבית הספר? כדי להיות לחם מלומד.",
+            "מה זה קטן, אפור ומטפס על בניינים? עכבר עם שאיפות.",
+            "איך קוראים לאיש שמוכר רק כובעים? איש-כובע.",
+            "למה הצלחת הלכה לבית חולים? כי היא נשברה.",
+            "מה אומרים לשעון כועס? 'תיזהר, הזמן עובר'.",
+            "איך קוראים למלך של הדגים? לויתן.",
+            "למה המספריים תמיד צודקים? כי הם חותכים עניין.",
+            "מה זה צהוב, ארוך ומצחיק? בדיחה על בננה.",
+            "איך קוראים לחתול שחזר מהחלל? חתול-אסטרונאוט.",
+            "למה הכיסא הלך לטיפול? כי הרגליים שלו רעדו.",
+            "מה זה כחול, קטן ומתוק? ענב ביום קר.",
+            "איך קוראים לציפור שגרה במקפיא? צ'ילי-פור.",
+            "למה האופניים לא עמדו לבד? כי הם היו שני-צמיגים (עייפים).",
+            "מה זה אדום וצועק 'גו'? עגבנייה במירוץ.",
+            "איך קוראים למנהל עבודה ביער? מנהל-חורשה.",
+            "למה הדלת תמיד סגורה בבית ספר? כדי שהידע לא יברח.",
+            "מה אומרים לספר שמתלונן? 'תפתח דף חדש'.",
+            "איך קוראים לסנדוויץ' שהולך לים? לחם-ים.",
+            "למה השמש לא הלכה לאוניברסיטה? כי יש לה כבר 5 מיליארד מעלות.",
+            "מה אמר הנייר למספריים? 'די, אתה חותך אותי'.",
+            "איך קוראים למלפפון שגר בחוות חיות? מלפפון-חווה.",
+            "למה הלימון היה עצוב? כי הוא היה חמוץ.",
+            "מה זה קטן, צהוב ומסוכן? אפרוח עם קראטה.",
+            "איך קוראים לזבוב ששומע מוזיקה? זבוב-פופ.",
+            "למה הכריש לא אוכל ליצנים? כי יש להם טעם מצחיק.",
+            "מה זה ירוק ועושה 'מו'? דשא שמעמיד פנים שהוא פרה.",
+            "איך קוראים לקיפוד בלי קוצים? קרחת-קיפוד.",
+            "למה הספרייה היא המקום הכי גבוה בעולם? כי יש בה המון סיפורים (קומות).",
+            "מה זה שקוף וריחני? נשיפה של בצל.",
+            "איך קוראים לארנב שמנגן בגיטרה? ארנב-רוק."
+        ];
+
+        let currentScreen = 'home';
+        let breathTimeout;
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            currentScreen = id;
+            
+            if (id === 'breathing') {
+                const circle = document.getElementById('breathCircle');
+                circle.className = "breath-circle";
+                void circle.offsetWidth; 
+                startBreathing(); 
+            } else {
+                clearTimeout(breathTimeout);
+                stopBreathing();
+            }
+        }
+
+        function startBreathing() {
+            const circle = document.getElementById('breathCircle');
+            const desc = document.getElementById('breathDesc');
+            
+            function runCycle() {
+                if(currentScreen !== 'breathing') return;
+                
+                circle.innerText = "שאיפה";
+                circle.classList.remove('hold', 'shrink');
+                circle.classList.add('expand');
+                desc.innerText = "מילוי הריאות באוויר נקי";
+                
+                breathTimeout = setTimeout(() => {
+                    if(currentScreen !== 'breathing') return;
+                    circle.innerText = "להחזיק";
+                    circle.classList.remove('expand');
+                    circle.classList.add('hold');
+                    desc.innerText = "שקט פנימי...";
+                    
+                    breathTimeout = setTimeout(() => {
+                        if(currentScreen !== 'breathing') return;
+                        circle.innerText = "נשיפה";
+                        circle.classList.remove('hold');
+                        circle.classList.add('shrink');
+                        desc.innerText = "שחרור כל המתח החוצה";
+                        
+                        breathTimeout = setTimeout(runCycle, 4000);
+                    }, 4000);
+                }, 4000);
+            }
+            runCycle();
+        }
+
+        function stopBreathing() {
+            const circle = document.getElementById('breathCircle');
+            circle.className = "breath-circle";
+            circle.innerText = "שאיפה";
+        }
+
+        function nextJoke() {
+            const jokeBox = document.getElementById('jokeBox');
+            let newJoke;
+            do {
+                newJoke = jokes[Math.floor(Math.random() * jokes.length)];
+            } while (newJoke === jokeBox.innerText);
+            jokeBox.innerText = newJoke;
+        }
+
+        const emojiSets = [
+            ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+            ['🍎', '🍌', '🍇', '🍓', '🍒', '🥝', '🍊', '🍍'],
+            ['😀', '😎', '🥳', '🤩', '🤖', '👻', '🦄', '🌈'],
+            ['⚽', '🏀', '🎸', '🎮', '🚗', '🪂', '⛵', '🚲']
+        ];
+
+        function initMemoryGame() {
+            showScreen('memory');
+            const selectedSet = emojiSets[Math.floor(Math.random() * emojiSets.length)];
+            const icons = [...selectedSet, ...selectedSet].sort(() => 0.5 - Math.random());
+            
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            let flippedCards = [];
+            let matchedCount = 0;
+
+            icons.forEach((icon) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.icon = icon;
+                card.onclick = () => {
+                    if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+                        card.innerText = icon;
+                        card.classList.add('flipped');
+                        flippedCards.push(card);
+
+                        if (flippedCards.length === 2) {
+                            if (flippedCards[0].dataset.icon === flippedCards[1].dataset.icon) {
+                                flippedCards = [];
+                                matchedCount += 2;
+                                if (matchedCount === icons.length) {
+                                    setTimeout(() => alert('המשחק הושלם! כל הכבוד ✨'), 500);
+                                }
+                            } else {
+                                setTimeout(() => {
+                                    flippedCards.forEach(c => {
+                                        c.innerText = '';
+                                        c.classList.remove('flipped');
+                                    });
+                                    flippedCards = [];
+                                }, 800);
+                            }
+                        }
+                    }
+                };
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
