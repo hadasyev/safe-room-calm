@@ -31,9 +31,9 @@
         .container {
             width: 95%;
             max-width: 360px;
-            height: 60vh;
+            height: 75vh;
             background: var(--white);
-            padding: 16px;
+            padding: 20px;
             border-radius: 30px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.06);
             display: flex;
@@ -167,9 +167,9 @@
     <div class="container">
         <!-- Main Menu -->
         <div id="home" class="screen active">
-            <h1>זמן להירגע קצת 🤍</h1>
+            <h1>זמן להירגע קצת 🦋</h1>
             <span class="subtitle">רגע של שקט במרחב המוגן</span>
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px; width: 100%;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; width: 100%;">
                 <button class="menu-btn" onclick="showScreen('breathing')">🌬️ נשימה עמוקה</button>
                 <button class="menu-btn" onclick="showScreen('jokes'); nextJoke()">🃏 רגע של חיוך</button>
                 <button class="menu-btn" onclick="initMemoryGame()">🎴 משחק זיכרון</button>
@@ -380,5 +380,6 @@
 </body>
 
 </html>
+
 
 
