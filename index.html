@@ -275,7 +275,7 @@ font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     <div class="container">
         <!-- Main Menu -->
         <div id="home" class="screen active">
-            <h1>זמן להירגע קצת 🌾</h1>
+            <h1>זמן להירגע קצת ☀️</h1>
             <span class="subtitle">רגע של שקט במרחב המוגן</span>
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; width: 100%;">
                 <button class="menu-btn" onclick="showScreen('breathing')">🌬️ נשימה עמוקה</button>
@@ -315,7 +315,6 @@ font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         <!-- Odd One Game Screen -->
         <div id="oddone" class="screen">
             <div class="oddone-wrap">
-                <div class="oddone-score-badge" id="oddone-score-badge">⭐ <span id="oddone-score">0</span></div>
 
                 <div id="oddone-game-content" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
                     <h2>מה יוצא דופן? 🧐</h2>
@@ -600,7 +599,6 @@ font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         function oddOneUpdateUI() {
-            document.getElementById('oddone-score').innerText = oddOneScore;
             const grid = document.getElementById('oddone-game-grid');
             grid.innerHTML = '';
             oddOneCanClick = true;
@@ -643,7 +641,7 @@ font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
                         oddOneCurrentRound++;
                         oddOneUpdateUI();
                     }
-                }, 300);
+                }, 500);
             } else {
                 element.classList.add('wrong');
                 setTimeout(() => element.classList.remove('wrong'), 400);
@@ -675,6 +673,7 @@ font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     </script>
 </body>
 </html>
+
 
 
 
