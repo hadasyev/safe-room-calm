@@ -11,6 +11,8 @@
             --accent-color: #00796b;
             --text-color: #2c3e50;
             --white: #ffffff;
+            --success: #22c55e;
+            --wrong: #ef4444;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -40,6 +42,7 @@
             display: flex;
             flex-direction: column;
             text-align: center;
+            position: relative;
         }
 
         h1 { 
@@ -71,6 +74,7 @@
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.08);
             transition: transform 0.1s;
+font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         .menu-btn:active { transform: scale(0.98); }
@@ -160,10 +164,132 @@
             cursor: pointer;
             text-decoration: underline;
             margin-top: auto;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Odd One Game */
+        .oddone-wrap {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .oddone-game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .oddone-item-box {
+            aspect-ratio: 1;
+            background: #f8fffe;
+            border: 2px solid #edf9f7;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .oddone-item-box:active {
+            transform: scale(0.98);
+        }
+
+        .oddone-item-box.correct {
+            background: #f0fdf4;
+            border-color: var(--success);
+        }
+
+        .oddone-item-box.wrong {
+            background: #fef2f2;
+            border-color: var(--wrong);
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .oddone-progress-bar {
+            display: flex;
+            gap: 6px;
+            margin-top: auto;
+            margin-bottom: 6px;
+        }
+
+        .oddone-progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #b2dfdb;
+            transition: background 0.2s;
+        }
+
+        .oddone-progress-dot.filled {
+            background: var(--accent-color);
+        }
+
+        .oddone-score-badge {
+            position: absolute;
+            top: 18px;
+            left: 0;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--accent-color);
+        }
+
+        .confetti-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        .oddone-btn-action {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+        }
+
+        .oddone-btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .oddone-hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
+
+    <div class="confetti-layer" id="confetti-holder"></div>
 
     <div class="container">
         <!-- Main Menu -->
@@ -174,12 +300,13 @@
                 <button class="menu-btn" onclick="showScreen('breathing')">🌬️ נשימה עמוקה</button>
                 <button class="menu-btn" onclick="showScreen('jokes'); nextJoke()">🃏 רגע של חיוך</button>
                 <button class="menu-btn" onclick="initMemoryGame()">🎴 משחק זיכרון</button>
+                <button class="menu-btn" onclick="oddOneStartGame()">🧐 מה יוצא דופן?</button>
             </div>
         </div>
 
         <!-- Breathing Screen -->
         <div id="breathing" class="screen">
-            <h2>תרגול נשימה</h2>
+            <h2>תרגול נשימה 🌬️</h2>
             <div class="breath-content">
                 <div class="breath-circle" id="breathCircle">שאיפה</div>
                 <div class="breath-instruction" id="breathDesc">נשימה איטית ומודעת</div>
@@ -202,6 +329,36 @@
             <div id="memoryGrid" class="grid"></div>
             <button class="menu-btn" style="padding: 10px; font-size: 1rem; margin-top: 10px;" onclick="initMemoryGame()">משחק חדש</button>
             <button class="back-btn" onclick="showScreen('home')">חזרה לתפריט</button>
+        </div>
+
+        <!-- Odd One Game Screen -->
+        <div id="oddone" class="screen">
+            <div class="oddone-wrap">
+                <div class="oddone-score-badge" id="oddone-score-badge">⭐ <span id="oddone-score">0</span></div>
+
+                <div id="oddone-game-content" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <h2>מה יוצא דופן? 🧐</h2>
+
+                    <div class="oddone-game-grid" id="oddone-game-grid"></div>
+
+                    <div class="oddone-progress-bar" id="oddone-level-dots"></div>
+
+                    <button class="back-btn" onclick="showScreen('home')">חזרה לתפריט</button>
+                </div>
+
+                <div id="oddone-break-screen" class="oddone-hidden" style="height: 100%; width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size: 4.5rem; margin-bottom: 24px;">✨</div>
+                    <h1 style="color: var(--accent-color); font-size: 2rem; margin: 0 0 8px 0;">נהדר!</h1>
+                    <button onclick="oddOneContinueGame()" class="oddone-btn-action">להמשיך?</button>
+                </div>
+
+                <div id="oddone-win-screen" class="oddone-hidden" style="height: 100%; width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size: 5rem; margin-bottom: 24px;">🏆</div>
+                    <h1 style="color: var(--accent-color); font-size: 2rem; margin: 0 0 20px 0;">מעולה! סיימת את המשחק!</h1>
+                    <button onclick="oddOneResetGame()" class="oddone-btn-action">מההתחלה?</button>
+                    <button class="back-btn" onclick="showScreen('home')" style="margin-top: 8px;">חזרה לתפריט</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -377,17 +534,183 @@
                 grid.appendChild(card);
             });
         }
+
+        const oddOneAllChallenges = [
+            { g: ["🍎", "🍌", "🍇"], o: "🐶" },
+            { g: ["🚗", "🚌", "🚑"], o: "🍦" },
+            { g: ["🦁", "🐯", "🐻"], o: "🎁" },
+            { g: ["👕", "👖", "👗"], o: "🍕" },
+            { g: ["🎸", "🎻", "🎺"], o: "🛝" },
+            { g: ["🥦", "🥕", "🌽"], o: "✈️" },
+            { g: ["⚽", "🏀", "🥎"], o: "🍔" },
+            { g: ["🔨", "🪚", "🔧"], o: "🐭" },
+            { g: ["🌙", "⭐", "☁️"], o: "🚲" },
+            { g: ["🏠", "🏢", "🏰"], o: "🍍" },
+            { g: ["🐙", "🐡", "🐋"], o: "🚒" },
+            { g: ["🚲", "🛵", "🏍️"], o: "🦓" },
+            { g: ["👟", "👠", "👢"], o: "🐥" },
+            { g: ["🥛", "☕", "🧃"], o: "🌻" },
+            { g: ["🖥️", "💻", "⌨️"], o: "🛁" },
+            { g: ["🧼", "🧽", "🛁"], o: "🦜" },
+            { g: ["🧢", "👒", "🎩"], o: "🍟" },
+            { g: ["🌵", "🌿", "🌹"], o: "🚂" },
+            { g: ["🦒", "🐘", "🦓"], o: "🍩" },
+            { g: ["🍳", "🥘", "🍲"], o: "🪁" },
+            { g: ["🛏️", "🪑", "🛋️"], o: "🚗" },
+            { g: ["🪥", "🧼", "🧴"], o: "🚁" },
+            { g: ["🧤", "🧣", "🧥"], o: "🥐" },
+            { g: ["🎳", "🎯", "🎮"], o: "🦁" },
+            { g: ["🔦", "🕯️", "💡"], o: "🎈" },
+            { g: ["🐝", "🐞", "🐜"], o: "🧸" },
+            { g: ["🚁", "✈️", "🪂"], o: "🥗" },
+            { g: ["🕶️", "☀️", "⛱️"], o: "🧤" },
+            { g: ["🎂", "🧁", "🍪"], o: "🥦" },
+            { g: ["🎻", "🪈", "🥁"], o: "🌽" },
+            { g: ["🧦", "👔", "👗"], o: "🍋" },
+            { g: ["🐄", "🐏", "🐎"], o: "🪻" },
+            { g: ["🚿", "🚽", "🛁"], o: "⛺" },
+            { g: ["🍓", "🍒", "🍑"], o: "🦋" },
+            { g: ["❄️", "🌪️", "🌧️"], o: "🦄" },
+            { g: ["🚒", "🚓", "🚕"], o: "🍭" },
+            { g: ["🥪", "🌮", "🥙"], o: "💐" },
+            { g: ["🌲", "🌴", "🌳"], o: "💚" },
+            { g: ["🏔️", "🌋", "🌄"], o: "🧺" },
+            { g: ["🔭", "🧪", "🔬"], o: "🐉" },
+            { g: ["💍", "💎", "👑"], o: "🥕" },
+            { g: ["🎨", "🖍️", "🖌️"], o: "🐳" },
+            { g: ["🥐", "🥨", "🥖"], o: "☀️" },
+            { g: ["🛳️", "⛵", "🛶"], o: "✈️" },
+            { g: ["🐧", "🦆", "🐓"], o: "🏝️" },
+            { g: ["🦷", "👁️", "👂"], o: "🎒" },
+            { g: ["⛄", "🧤", "❄️"], o: "🌞" },
+            { g: ["🎈", "🎉", "🎊"], o: "🌾" },
+            { g: ["🎒", "📏", "🖍️"], o: "🦖" },
+            { g: ["💗", "💝", "💕"], o: "🤩" }
+        ];
+
+        let oddOneChallenges = [];
+        let oddOneCurrentRound = 0;
+        let oddOneScore = 0;
+        let oddOneCanClick = true;
+
+        function oddOneStartGame() {
+            oddOneInitGame();
+            showScreen('oddone');
+        }
+
+        function oddOneInitGame() {
+            oddOneChallenges = [...oddOneAllChallenges].sort(() => Math.random() - 0.5);
+            oddOneCurrentRound = 0;
+            oddOneScore = 0;
+            oddOneRenderProgressDots();
+            oddOneUpdateUI();
+            oddOneShowSubview('oddone-game-content');
+        }
+
+        function oddOneRenderProgressDots() {
+            const container = document.getElementById('oddone-level-dots');
+            container.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'oddone-progress-dot';
+                dot.id = `oddone-dot-${i}`;
+                container.appendChild(dot);
+            }
+        }
+
+        function oddOneUpdateUI() {
+            document.getElementById('oddone-score').innerText = oddOneScore;
+            const grid = document.getElementById('oddone-game-grid');
+            grid.innerHTML = '';
+            oddOneCanClick = true;
+
+            const currentSubIndex = oddOneCurrentRound % 10;
+            for (let i = 0; i < 10; i++) {
+                const dot = document.getElementById(`oddone-dot-${i}`);
+                if (dot) {
+                    dot.className = i <= currentSubIndex ? 'oddone-progress-dot filled' : 'oddone-progress-dot';
+                }
+            }
+
+            const levelData = oddOneChallenges[oddOneCurrentRound];
+            const items = [...levelData.g, levelData.o].sort(() => Math.random() - 0.5);
+
+            items.forEach(item => {
+                const box = document.createElement('div');
+                box.className = 'oddone-item-box';
+                box.innerText = item;
+                box.onclick = () => oddOneCheckChoice(item, levelData.o, box);
+                grid.appendChild(box);
+            });
+        }
+
+        function oddOneCheckChoice(chosen, correct, element) {
+            if (!oddOneCanClick) return;
+
+            if (chosen === correct) {
+                oddOneCanClick = false;
+                oddOneScore += 10;
+                element.classList.add('correct');
+                oddOneBurstConfetti(40);
+
+                setTimeout(() => {
+                    const next = oddOneCurrentRound + 1;
+                    if (next === 50) {
+                        oddOneShowSubview('oddone-win-screen');
+                    } else if (next > 0 && next % 10 === 0) {
+                        oddOneShowMilestone();
+                    } else {
+                        oddOneCurrentRound++;
+                        oddOneUpdateUI();
+                    }
+                }, 600);
+            } else {
+                element.classList.add('wrong');
+                setTimeout(() => element.classList.remove('wrong'), 400);
+            }
+        }
+
+        function oddOneShowMilestone() {
+            oddOneShowSubview('oddone-break-screen');
+        }
+
+        function oddOneContinueGame() {
+            oddOneCurrentRound++;
+            oddOneShowSubview('oddone-game-content');
+            oddOneUpdateUI();
+        }
+
+        function oddOneShowSubview(id) {
+            ['oddone-game-content', 'oddone-break-screen', 'oddone-win-screen'].forEach(s => {
+                document.getElementById(s).classList.add('oddone-hidden');
+            });
+            document.getElementById(id).classList.remove('oddone-hidden');
+        }
+
+        function oddOneResetGame() {
+            oddOneInitGame();
+            showScreen('oddone');
+        }
+
+        function oddOneBurstConfetti(num) {
+            const colors = ['#4db6ac', '#00796b', '#80cbc4', '#26a69a', '#b2dfdb', '#009688'];
+            for (let i = 0; i < num; i++) {
+                const p = document.createElement('div');
+                p.className = 'confetti-piece';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.top = '-20px';
+                document.getElementById('confetti-holder').appendChild(p);
+
+                p.animate([
+                    { top: '-20px', transform: 'rotate(0deg) scale(0.6)', opacity: 1 },
+                    { top: '100vh', transform: `rotate(${Math.random() * 1000}deg) scale(1.4)`, opacity: 0 }
+                ], {
+                    duration: 500 + Math.random() * 700,
+                    easing: 'ease-in'
+                }).onfinish = () => p.remove();
+            }
+        }
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
